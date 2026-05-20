@@ -1,0 +1,54 @@
+{
+  "_note": "Placeholder file. Run notebook/experiments.ipynb to populate with actual values.",
+  "_status": "NOT_RUN",
+  "sec2": {
+    "rutkowski_top_similarities": null,
+    "bowater_top_similarities": null,
+    "rutkowski_hits_above_090": null,
+    "bowater_hits_above_090": null,
+    "threshold": 0.90
+  },
+  "sec3a": {
+    "rutkowski_mean_loss": null,
+    "bowater_mean_loss": null,
+    "mia_auc": null
+  },
+  "sec3b": {
+    "rutkowski_clip_mean": null,
+    "bowater_clip_mean": null,
+    "baseline_clip_mean": null
+  },
+  "sec4": {
+    "gss_rutkowski_sd15": null,
+    "gss_rutkowski_sd21": null,
+    "gss_bowater_sd15": null,
+    "gss_baseline_sd15": null,
+    "used_csd": null,
+    "_reference_csd_paper": {
+      "rutkowski_sd14": 0.85,
+      "rutkowski_sd21": 0.48
+    }
+  },
+  "sec5": {
+    "rutkowski_explicit": {
+      "gss_rutkowski": null,
+      "gss_bowater": null,
+      "refusal": null
+    },
+    "rutkowski_descriptive": {
+      "gss_rutkowski": null,
+      "gss_bowater": null,
+      "refusal": null
+    },
+    "bowater_explicit": {
+      "gss_rutkowski": null,
+      "gss_bowater": null,
+      "refusal": null
+    },
+    "baseline": {
+      "gss_rutkowski": null,
+      "gss_bowater": null,
+      "refusal": null
+    }
+  }
+}

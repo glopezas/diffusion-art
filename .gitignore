@@ -1,0 +1,44 @@
+project.md
+
+# Quarto build output
+_site/
+.quarto/
+*.html
+!index.html
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+csd_repo/
+
+# Large binary files (tracked by name, not content)
+assets/figures/*.json
+assets/generated/**/*.png
+assets/gemini/*.png
+assets/laion_matches/*.pkl
+results/laion_results.pkl
+assets/csd_vitl.pth
+
+# Environment
+.env
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keep directory structure
+!assets/portfolio/.gitkeep
+!assets/control/.gitkeep
+!assets/generated/sd15_style/.gitkeep
+!assets/generated/sd21_style/.gitkeep
+!assets/generated/sd15_caption/.gitkeep
+!assets/generated/mia/.gitkeep
+!assets/gemini/.gitkeep
+!assets/figures/.gitkeep
+
+/.quarto/

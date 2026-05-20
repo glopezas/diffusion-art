@@ -1,0 +1,221 @@
+---
+title: "When Models Become Art Forgers"
+subtitle: "A case study with Greg Rutkowski and generative models"
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-location: left
+    toc-depth: 2
+    toc-title: "Contents"
+    fig-cap-location: bottom
+    page-layout: article
+    smooth-scroll: true
+    html-math-method: katex
+---
+
+## The question
+
+When a generative model learns to paint like a specific artist, is it forging their work? The word is loaded, but the phenomenon is real. Models trained on an artist's images can reproduce their visual style on demand, without credit, consent, or compensation. Whether that constitutes forgery in any legal sense is still being decided in court.
+
+What is less discussed is what the artist can actually find out. If you suspect a model was trained on your work, what tools do you have? This post works through that question using Greg Rutkowski as a case study, moving across three levels of access:
+
+- **The training data.** If the dataset is public, you can search it directly.
+- **The model weights.** If the model is open-weight, you can probe its internals.
+- **The model outputs.** Even without weights, you can generate images and measure them.
+
+After working through all three, we ask a more practical question: can someone actually reproduce the artist's style on demand today, with commercially available models? And are those models trying to prevent it?
+
+---
+
+## Greg Rutkowski
+
+Greg Rutkowski is a Polish digital artist whose paintings hang in the portfolios of Dungeons and Dragons, Magic: The Gathering, Sony, and Ubisoft. His work is immediately recognizable: dramatic side-lighting, rich ochre and crimson palettes, and a classical oil-painting texture applied to fantastical subjects.
+
+::: {.fig-placeholder}
+**Gallery: Greg Rutkowski reference works**
+3-4 paintings from Rutkowski's portfolio displayed in a two-column grid with captions.
+*Add images to `assets/portfolio/` and replace this block.*
+:::
+
+In 2022, users of Stable Diffusion discovered that appending "by Greg Rutkowski" to any prompt reliably upgraded the output. The phrase became more common in SD prompts than "by Picasso" or "by Da Vinci." His name appeared in more than 93,000 public prompts in a single month. He learned about this from journalists, not from Stability AI.
+
+He is now a named plaintiff in [*Andersen v. Stability AI*](https://www.courtlistener.com/docket/66732129/andersen-v-stability-ai-ltd/) (N.D. Cal. 3:23-cv-00201), a class action alleging that Stability AI trained its models on billions of scraped images without consent. In November 2025, the UK High Court ruled in [*Getty Images v. Stability AI*](https://www.bailii.org/ew/cases/EWHC/Ch/2025/2863.html) that "the Model itself does not store any of those Copyright Works," narrowing but not ending the debate.
+
+His case is well-suited to this investigation. His work is confirmed in LAION-5B, the training dataset for Stable Diffusion 1.x. Stability AI reportedly removed him from SD 2.1's training data, giving us a natural experiment to work with. And his ongoing lawsuit makes the evidentiary question legally consequential, not merely academic.
+
+Throughout, we compare Rutkowski against a control artist: **Charlie Bowater**, a UK-based digital illustrator working in painterly fantasy character art. Her genre is directly comparable to Rutkowski's, which means any difference in results can be attributed to training data presence rather than style mismatch.
+
+---
+
+## Level 1: The training data
+
+The most direct question is also the easiest: is the artist's work actually in the training data?
+
+LAION-5B is a public index of 5.85 billion image-text pairs scraped from the web, and the training data for Stable Diffusion 1.x. LAION stores URL metadata and CLIP embeddings for each image, not the images themselves, but that is enough to run a similarity search. We query the LAION-5B knn index using the `clip-retrieval` client: for each portfolio image, we compute a CLIP ViT-L/14 embedding and retrieve the five nearest neighbors by cosine similarity. A match above 0.95 means the image, or a near-duplicate, was in the training data at collection time.
+
+::: {.fig-placeholder}
+**Figure 1a.** Each row shows a Rutkowski portfolio image (left) next to its nearest LAION neighbor (right), with cosine similarity annotated. Sorted by descending similarity.
+*Generate with notebook Section 2.*
+:::
+
+::: {.fig-placeholder}
+**Figure 1b.** Number of LAION matches above cosine similarity 0.90 for Rutkowski vs. Bowater, with individual scores shown as points.
+*Generate with notebook Section 2.*
+:::
+
+Rutkowski's work is there. Bowater's largely is not. We can establish this without touching the model at all.
+
+In copyright law, this establishes **access**: the defendant had the opportunity to copy the work. It is a necessary condition for infringement, but not sufficient. The statute requires proof that the defendant copied protected expression from a specific work. Finding your image in LAION proves it was scraped; it does not prove the model did anything specific with it. That is where the next level comes in.
+
+---
+
+## Level 2: The model weights
+
+Since SD 1.5 is open-weight, we can load it and inspect its internal behavior. The question is whether training on Rutkowski's images left a detectable trace in the weights.
+
+The standard approach is **loss-based membership inference**, developed for diffusion models by [Matsumoto et al. (IEEE S&P Workshops 2023)](https://arxiv.org/abs/2302.03262). Diffusion models are trained to predict the noise added to an image at each timestep:
+
+$$\mathcal{L}(\theta) = \mathbb{E}_{t,\, x_0,\, \epsilon \sim \mathcal{N}(0,I)} \left[ \bigl\| \epsilon - \epsilon_\theta(x_t,\, t) \bigr\|^2 \right]$$
+
+If the model trained on an image, it should denoise it more accurately, producing lower prediction error. We measure that error across several timesteps for each image and use the mean as a membership score.
+
+::: {.fig-placeholder}
+**Figure 2a.** Mean prediction MSE vs. timestep for Rutkowski images (red), Bowater images (blue), and a random baseline (gray). Shaded bands show ±1 SD.
+*Generate with notebook Section 3a.*
+:::
+
+::: {.fig-placeholder}
+**Figure 2b.** Distribution of membership scores for Rutkowski vs. Bowater.
+*Generate with notebook Section 3a.*
+:::
+
+::: {.fig-placeholder}
+**Figure 2c.** ROC curve for the loss-based classifier. AUC = 0.50 means chance performance.
+*Generate with notebook Section 3a.*
+:::
+
+We expect AUC near 0.50, and that is the finding, not a failure. [Dubinski et al. (WACV 2024)](https://arxiv.org/abs/2306.12983) showed that at LAION scale, all standard membership inference attacks perform near chance. The model has seen five billion images; the effect of any single one on the weights is too small to detect. [Das et al. (ICML 2024)](https://arxiv.org/abs/2406.16201) showed that earlier apparent successes relied on comparing groups with different statistical properties, not a genuine membership signal.
+
+We also try a second approach. For each Rutkowski image that appears in LAION, the retrieval step recovers the actual caption the model was trained alongside. We use those captions as generation prompts and measure CLIP similarity between the outputs and the originals — if the model specifically learned to associate that caption with Rutkowski's visual style, the generated images should be closer to his work than chance would predict. For Bowater, we generate captions with BLIP-2, which introduces a known asymmetry: BLIP-2 captions are accurate but less specific than original alt-text, so any apparent advantage for Rutkowski could reflect caption quality as much as the model's memory.
+
+::: {.fig-placeholder}
+**Figure 2d.** For three Rutkowski images: the original, its LAION caption, and three SD 1.5 generations. Each generation annotated with CLIP similarity to the original.
+*Generate with notebook Section 3b.*
+:::
+
+::: {.fig-placeholder}
+**Figure 2e.** CLIP similarity distributions: Rutkowski with real captions (red), Bowater with BLIP-2 captions (blue), random-pairing baseline (gray).
+*Generate with notebook Section 3b.*
+:::
+
+The signal here, if present at all, is marginal and confounded. Open weights do not give the artist what they need. The trace is too faint to detect.
+
+---
+
+## Level 3: The model outputs
+
+If the weights hide the trace, perhaps the outputs reveal it. We step back from the internals entirely and ask a simpler question: when prompted, does the model produce images that look like this artist?
+
+The key tool is **CSD (Content and Style Disentangled)**, introduced by [Somepalli et al. (2024)](https://arxiv.org/abs/2404.01292). Standard similarity metrics like CLIP conflate content and style. CSD is a ViT-L/14 model fine-tuned on LAION-Styles specifically to separate them. High CSD similarity between two images means they share the same visual language regardless of what they depict.
+
+The paper defines **General Style Similarity (GSS)**: generate images with "a painting in the style of [artist]" and compute average CSD similarity between those outputs and the artist's portfolio. They report GSS = 0.85 for Rutkowski on SD 1.4 and 0.48 on SD 2.1. We replicate and extend this by computing a prototype style vector for each artist and measuring how closely SD 1.5 and SD 2.1 generations match it, across a general style prompt and three content-specific variants.
+
+::: {.fig-placeholder}
+**Figure 3a.** Three rows: Rutkowski originals, SD 1.5 generations "in his style," SD 2.1 generations "in his style." Each generated image annotated with its CSD score.
+*Generate with notebook Section 4a.*
+:::
+
+::: {.fig-placeholder}
+**Figure 3b.** GSS scores (mean ± SD) for Rutkowski on SD 1.5, Rutkowski on SD 2.1, Bowater on SD 1.5, and a no-artist baseline. Reference lines at 0.85 and 0.48 from the CSD paper.
+*Generate with notebook Section 4a.*
+:::
+
+::: {.fig-placeholder}
+**Figure 3c.** General Style Similarity vs. Content-Constrained Style Similarity for each condition.
+*Generate with notebook Section 4a.*
+:::
+
+The SD 1.5 vs. SD 2.1 comparison is the strongest result in this investigation. Both models share the same architecture; the main documented difference is that Stability AI revised the training data for 2.1 and reportedly excluded Rutkowski. A large GSS drop from 1.5 to 2.1 for Rutkowski, with no corresponding drop for Bowater, is the closest thing to a controlled experiment we have: training data presence drives style replication.
+
+The legal catch is immediate. Style is not copyrightable. Section 102(b) of the US Copyright Act explicitly excludes "style or technique" from protection. Even GSS = 0.85 does not establish infringement. So here we have the strongest signal in the investigation, and the one that matters least in court.
+
+---
+
+## But is reproduction even possible?
+
+The three levels above ask a forensic question: given a model and an artist's portfolio, what evidence can we gather? But there is a separate question that matters more to the artist in practice: can someone sitting at a keyboard today, using commercially available models, actually replicate the artist's style on demand? And are those models trying to prevent it?
+
+We test four models: **Gemini** (Google), **DALL-E 3** (OpenAI), **Midjourney**, and **Adobe Firefly**. Firefly is a meaningful addition: Adobe explicitly states it is trained only on licensed and public domain content, making it a potential negative control for style replication.
+
+For each model, we run three kinds of experiments.
+
+**Named style generation.** We ask directly for "a painting in the style of Greg Rutkowski." This is the most obvious test, and also the easiest for a provider to block. We document whether the model complies, refuses, adds a disclaimer, or silently modifies the output.
+
+**Descriptive style generation.** We describe Rutkowski's visual characteristics without naming him: dramatic side-lighting, rich warm palette, painterly texture applied to fantastical subjects. This bypasses name-based filters. If the model still produces stylistically similar outputs, the style is encoded in the weights independent of name recognition.
+
+**Zero-shot style transfer.** We upload one of Rutkowski's paintings and ask the model to generate a new image "in the style of this image," with no text attribution at all. The model receives the visual pattern as direct input and is asked to replicate it. This bypasses name-based filtering entirely: the model has no way of knowing whose work it is being shown.
+
+::: {.callout-warning appearance="minimal"}
+**Awaiting manual experiments.** Run the three experiment types across all four models. See the notebook Section 5 for the full protocol. Save outputs to `assets/frontier/`.
+:::
+
+::: {.fig-placeholder}
+**Figure 5a.** Named style generation across four models: what each produces (or refuses to produce) for "a painting in the style of Greg Rutkowski." Refusal text reproduced verbatim where applicable.
+*Collect outputs manually and add to `assets/frontier/named/`.*
+:::
+
+::: {.fig-placeholder}
+**Figure 5b.** Descriptive style generation across four models: outputs for the style description with no artist name. CSD similarity to Rutkowski's prototype annotated.
+*Collect outputs manually and add to `assets/frontier/descriptive/`.*
+:::
+
+::: {.fig-placeholder}
+**Figure 5c.** Zero-shot style transfer: outputs from each model given a Rutkowski painting as a visual reference. CSD similarity to his prototype annotated.
+*Collect outputs manually and add to `assets/frontier/transfer/`.*
+:::
+
+::: {.fig-placeholder}
+**Figure 5d.** CSD style similarity across all conditions (named, descriptive, zero-shot) and all models.
+*Generate with notebook Section 5 after collecting all outputs.*
+:::
+
+**Refusal and behavior log:**
+
+| Model | Experiment | Behavior |
+|-------|------------|----------|
+| Gemini | Named | *[TBD]* |
+| Gemini | Descriptive | *[TBD]* |
+| Gemini | Zero-shot transfer | *[TBD]* |
+| DALL-E 3 | Named | *[TBD]* |
+| DALL-E 3 | Descriptive | *[TBD]* |
+| DALL-E 3 | Zero-shot transfer | *[TBD]* |
+| Midjourney | Named | *[TBD]* |
+| Midjourney | Descriptive | *[TBD]* |
+| Adobe Firefly | Named | *[TBD]* |
+| Adobe Firefly | Descriptive | *[TBD]* |
+
+Two things are worth watching regardless of what the results show. First, whether blocking the artist's name actually prevents style replication. If a model refuses "in the style of Greg Rutkowski" but produces similar output from a description, the filter addresses a surface symptom, not the underlying capability. Second, whether the zero-shot transfer succeeds at all: if a model that refuses the named prompt will still faithfully replicate his style from a visual reference, then the refusal is purely about attribution, not about preventing the reproduction itself.
+
+The refusals themselves carry a different kind of signal. Providers do not build name-based filters for artists they have never heard of. A filter implies awareness that this artist's name is associated with training data in a way that creates legal or reputational risk. That awareness is its own form of evidence.
+
+---
+
+## What can an artist actually know?
+
+The answer is: more than nothing, but less than what the law requires.
+
+At level 1, the finding is clear. Rutkowski's work is in LAION-5B. This is easy to verify and unambiguous. In copyright terms it establishes access, which is the beginning of an infringement claim, not the end.
+
+At level 2, the evidence fails. Loss-based membership inference produces near-chance AUC on a model trained at LAION scale. The trace left by any single image is too small to detect. Open weights turn out to give the artist very little more than a closed model would.
+
+At level 3, the evidence is strongest and legally weakest. SD 1.5 replicates Rutkowski's style with high fidelity. SD 2.1 does not. The most natural explanation is the training data change. But style replication is not infringement, and courts have never treated it as such.
+
+The reproduction experiments add a different dimension. Several commercially available models are capable of replicating Rutkowski's visual style, and at least some of them appear to know it, given the filters they have built around his name. Those filters are imperfect: descriptive prompts and zero-shot transfer can bypass name-based blocking, and a style can persist in a model's outputs long after the name has been suppressed.
+
+The inversion at the heart of this investigation is worth sitting with. The most accessible evidence, dataset presence, establishes the least legally. The most interesting evidence, the SD 1.5 vs. SD 2.1 natural experiment, is legally irrelevant because style is not copyrightable. And the evidence that would actually matter in court, proof that a specific output copies a specific painting, is precisely what none of these methods can provide.
+
+The UK High Court in *Getty v. Stability AI* (November 2025) rejected the argument that the trained model is itself an infringing copy. [Cooper and Grimmelmann (Chicago-Kent Law Review 2025)](https://arxiv.org/abs/2404.12590) argue that the real question is not whether a model remembers specific works but whether the process of learning from them creates liability. That question goes to trial in *Andersen v. Stability AI* in September 2026.
+
+Greg Rutkowski's art is in the training data. The models trained on it replicate his style. He cannot, with currently available tools, prove that any specific output copies any specific painting. That is the gap, and it is where the lawsuits, the technology, and the law are still catching up to each other.

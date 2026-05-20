@@ -1,0 +1,21 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Artists vs. Diffusion Models"
+  site-url: https://glopezas.github.io/diffusion-art/
+  search: false
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-location: left
+    toc-depth: 2
+    toc-title: "Contents"
+    fig-cap-location: bottom
+    page-layout: article
+    smooth-scroll: true
+    html-math-method: katex
