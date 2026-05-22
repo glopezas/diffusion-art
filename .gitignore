@@ -17,6 +17,7 @@ csd_repo/
 assets/figures/*.json
 assets/generated/**/*.png
 assets/gemini/*.png
+assets/frontier/**/*.png
 assets/laion_matches/*.pkl
 results/laion_results.pkl
 assets/csd_vitl.pth
@@ -40,5 +41,8 @@ Thumbs.db
 !assets/generated/mia/.gitkeep
 !assets/gemini/.gitkeep
 !assets/figures/.gitkeep
+!assets/frontier/named/.gitkeep
+!assets/frontier/descriptive/.gitkeep
+!assets/frontier/transfer/.gitkeep
 
 /.quarto/

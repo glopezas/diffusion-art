@@ -206,6 +206,109 @@ pre code {
 }
 
 /* ===========================
+   Plotly chart wrapper
+   =========================== */
+
+.plotly-wrap {
+  margin: 2rem 0;
+}
+
+.plotly-wrap > div[id] {
+  width: 100%;
+  height: 400px;
+}
+
+.fig-caption {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+/* Suppress auto-generated figcaption for images where we write our own */
+.fig-caption-block {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: -0.25rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Hide the Quarto-generated figcaption when img alt is just "Figure X" */
+figure figcaption:empty,
+.quarto-figure figcaption {
+  display: none;
+}
+
+/* ===========================
+   Portfolio Carousel
+   =========================== */
+
+.portfolio-carousel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.carousel-track-wrap {
+  flex: 1;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.carousel-item img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.carousel-btn {
+  background: none;
+  border: 1.5px solid #d1d5db;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #374151;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+  padding-bottom: 2px;
+}
+
+.carousel-btn:hover:not(:disabled) {
+  border-color: #6b7280;
+  color: #111827;
+}
+
+.carousel-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.carousel-caption {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0.4rem 0 1.5rem;
+  text-align: center;
+}
+
+/* ===========================
    Responsive
    =========================== */
 
@@ -213,4 +316,5 @@ pre code {
   h1.title { font-size: 1.7rem; }
   body { font-size: 1rem; }
   .fig-placeholder { padding: 1.25rem 1rem; }
+  .carousel-track { grid-template-columns: 1fr; }
 }

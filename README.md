@@ -54,19 +54,41 @@ The notebook produces:
 
 ### 3. Run frontier model experiments (manual)
 
-In Gemini 2.0 Flash, run the four prompts in Section 5 of the notebook.
-Save 5 images per prompt to `assets/gemini/` as `{prompt_id}_{seed}.png`.
-Then run the Section 5 cells in the notebook.
+Run the three experiment types across Gemini, DALL-E 3, Midjourney, and Adobe Firefly.
+See the protocol in **Section 5** of the notebook for exact prompts and naming convention.
+Save outputs to:
+- `assets/frontier/named/` — named style prompt
+- `assets/frontier/descriptive/` — description without artist name
+- `assets/frontier/transfer/` — zero-shot style transfer (where supported)
 
-### 4. Render and deploy
+Then run the Section 5 cells in the notebook to compute CSD scores and generate Figure 5d.
 
-Install Quarto: https://quarto.org/docs/get-started/
+### 4. Preview locally
+
+Install Quarto if not already installed: https://quarto.org/docs/get-started/
+
+If Quarto was installed without sudo (WSL/Linux), the binary is at `~/.local/opt/quarto/bin/quarto`.
 
 ```bash
-# Preview locally
-quarto preview index.qmd
+# Build the site
+quarto render index.qmd
+# or if not in PATH:
+~/.local/opt/quarto/bin/quarto render index.qmd
+```
 
-# Deploy to GitHub Pages
+Then serve the output in a separate terminal:
+
+```bash
+python3 -m http.server 4848 --directory _site
+```
+
+Open http://localhost:4848 in your browser.
+
+> **Note:** `quarto preview` requires an interactive terminal. Use the two-step render + serve approach above for WSL or headless environments.
+
+### 5. Deploy to GitHub Pages
+
+```bash
 quarto publish gh-pages
 ```
 

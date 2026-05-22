@@ -1,6 +1,12 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - index.qmd
+  resources:
+    - assets/portfolio/
+    - assets/figures/
+    - assets/generated/
 
 website:
   title: "Artists vs. Diffusion Models"
