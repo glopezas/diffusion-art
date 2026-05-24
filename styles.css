@@ -278,6 +278,56 @@ figure figcaption:empty,
 }
 
 /* ===========================
+   Frontier Model Grid
+   =========================== */
+
+.frontier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.frontier-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.frontier-grid-item {
+  text-align: center;
+}
+
+.frontier-grid-item img {
+  width: 100%;
+  border-radius: 4px;
+  display: block;
+}
+
+.frontier-label {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 0.4rem 0 0;
+}
+
+.refused-placeholder {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #dc2626;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 1.25rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ===========================
    Responsive
    =========================== */
 
@@ -286,4 +336,5 @@ figure figcaption:empty,
   body { font-size: 1rem; }
   .fig-placeholder { padding: 1.25rem 1rem; }
   .portfolio-grid { grid-template-columns: repeat(2, 1fr); }
+  .frontier-grid, .frontier-grid-3 { grid-template-columns: 1fr; }
 }

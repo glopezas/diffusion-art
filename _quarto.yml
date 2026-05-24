@@ -7,6 +7,7 @@ project:
     - assets/portfolio/
     - assets/figures/
     - assets/generated/
+    - assets/frontier/
 
 website:
   title: "Artists vs. Diffusion Models"
