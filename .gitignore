@@ -17,7 +17,6 @@ csd_repo/
 assets/figures/*.json
 assets/generated/**/*.png
 assets/gemini/*.png
-assets/frontier/**/*.png
 assets/laion_matches/*.pkl
 results/laion_results.pkl
 assets/csd_vitl.pth
