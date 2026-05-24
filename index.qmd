@@ -282,7 +282,7 @@ That pattern makes the DALL-E 3 refusal more interesting. The model blocks attri
 
 ## Evidence without remedy
 
-Each level of this investigation produces a clearer technical signal and a weaker legal one. Dataset presence establishes access — necessary for infringement, not sufficient. Membership inference finds no detectable trace in the weights, leaving the "weights as copy" theory unverifiable rather than disproved. Output analysis shows the model does not reproduce specific paintings, but does reproduce style with high fidelity — which §102(b) explicitly excludes from protection.
+Each level of this investigation produces a clearer technical signal and a weaker legal one. Dataset presence establishes access, necessary for infringement, not sufficient. Membership inference finds no detectable trace in the weights, leaving the "weights as copy" theory unverifiable rather than disproved. Output analysis shows the model does not reproduce specific paintings, but does reproduce style with high fidelity — which §102(b) explicitly excludes from protection.
 
 The evidence that would actually matter in court — proof that a specific output copies a specific painting — is what none of these methods can produce. That is not a limitation of the experiments. It is where copyright law was written, long before a model could learn to paint like a living artist on command.
 
